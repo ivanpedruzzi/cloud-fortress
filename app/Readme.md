@@ -1,15 +1,3 @@
-# ./controller
+# Prova Ext.js
 
-This folder contains the controllers
-
-# ./model
-
-This folder contains the models
-
-# ./view
-
-This folder contains the views
-
-# ./store
-
-This folder contains the stores
+Semplice form di registrazione/login realizzato con Ext.js 
