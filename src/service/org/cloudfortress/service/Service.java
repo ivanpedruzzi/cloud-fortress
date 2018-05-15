@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 @SuppressWarnings("serial")
 public class Service extends HttpServlet {
-
+	
 	@Override
 	public void destroy() {
 		// TODO Auto-generated method stub
@@ -26,12 +26,26 @@ public class Service extends HttpServlet {
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
-		// TODO Auto-generated method stub
 		super.init(config);
+	}
+	
+	/*@Override
+	protected void service(HttpServletRequest arg0, HttpServletResponse arg1) throws ServletException, IOException {
+		super.service(arg0, arg1);
+		System.out.println("org.cloudfortress.service.Service.service()");
+	}*/
+	
+	@Override
+	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.getWriter().write("Hello World");
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		System.out.println("org.cloudfortress.service.Service.doPost()");
+		
+		String contentType = "application/json";
+		resp.setContentType(contentType);
 		
 		PrintWriter httpWriter = resp.getWriter();
 		try {
@@ -51,15 +65,17 @@ public class Service extends HttpServlet {
 				jsonResponse.put("success", false);
 				jsonResponse.put("error", "Request unknown");
 			}
-			jsonResponse.write(httpWriter);
+
+			writer = new StringWriter();
+			jsonResponse.write(writer, 2, 0);
+			System.out.println("org.cloudfortress.service.Service.doPost() content:" + writer.toString());
+			httpWriter.write(writer.toString());
+			httpWriter.flush();
 			
 		} catch (JSONException e) {
 			//send error to client, good for debugging 	
 			e.printStackTrace(httpWriter);
 		} 
-		
-		
-		super.doPost(req, resp);
 	}
 	
 	private JSONObject createUser(JSONObject createUserRequest) throws JSONException{
@@ -68,6 +84,11 @@ public class Service extends HttpServlet {
 		jsonResponse.put("success", true);
 		jsonResponse.put("message", "Create User succeded");
 		jsonResponse.put("request", createUserRequest);
+		
+		/*CallableStatement cStmt = conn.prepareCall("{call createUser(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+		createUserRequest.get
+		cStmt.setString(1, "abcdefg");
+		cStmt.execute();*/
 		
 		return jsonResponse;
 	}
@@ -81,5 +102,4 @@ public class Service extends HttpServlet {
 		
 		return jsonResponse;
 	}
-
 }
