@@ -32,7 +32,7 @@ Ext.define('client.WebDriverProxy', {
     extend: 'Ext.data.proxy.Ajax'
 
     ,url:location.protocol + '//' + location.hostname+(location.port ? ':'+location.port: '') 
-    ,path:'/service'
+    ,path:location.pathname + 'service'
     ,actionMethods: {
         create : 'POST',
         read   : 'POST',
@@ -68,7 +68,7 @@ Ext.define('client.WebDriverProxy', {
         else
             me.headers =  me.userHeaders;
             
-        me.headers["Authorization"] = 'Basic ' + Ext.util.Base64.encode(this.username+':'+this.password); 
+        //me.headers["Authorization"] = 'Basic ' + Ext.util.Base64.encode(this.username+':'+this.password); 
     
         Ext.apply(this,{
             actionMethods: {
@@ -92,89 +92,31 @@ Ext.define('client.WebDriverProxy', {
 
     callService:function(context, callbackParam, jsonRequest, sourcePanel){
         var privateCallBack = function(data){
-            var msg = null;
-            if(data==null || data[0]==null){
-                //msg = "Server return no data";
-                console.log('callService: Server return no data request:' + Ext.JSON.encode(jsonRequest));
-                
-                if(sourcePanel)
-                    console.log('WebDriverProxy.callService sourcePanel.id:' + sourcePanel.id);
-
-                Ext.GlobalEvents.fireEvent('showLogin', true, sourcePanel);
-            }
-            else if(data[0].error){
-                if(data[0].error.code && data[0].error.code === 'TOKEN_ID_EXPIRED') {
-                    Ext.GlobalEvents.fireEvent('showLogin', true, sourcePanel);
-                    return;
-                }
-                else if(data[0].error.message)
-                    msg = data[0].error.message;
-            }
-            else{
-                var realData = data[0].data;
-                if(realData && realData.error){
-                    msg = realData.error;
-                }
-            }
-            if(msg!=null){
-                Ext.MessageBox.show({
-                    title: 'Server Error',
-                    msg: msg,
-                    buttons: Ext.MessageBox.OK,
-                    icon: "Error"
-                });
-            }
+            if (data
+                && data.resultSet 
+                && data.resultSet.records 
+                && data.resultSet.records[0])
+                data = data.resultSet.records[0];
             
+            if(data.success==false){
+                console.log(data.error);
+            }
+
             //ALWAYS invoke callback even if data is null
-            callbackParam.call(context, realData);
+            callbackParam.call(context, data);
         }
 
+        var operation = new Ext.data.Operation({
+            'action'  :'read',
+            'jsonData':jsonRequest
+        });
 
-        var operation = this.createOperation('read', {
-             callback:privateCallBack
-            ,scope:context
-            ,params:jsonRequest
-        });    
-        this.doRequest(operation);
+        this.doRequest(operation, privateCallBack, context);
     }
 
-    /*buildRequest: function(operation) {
+    ,buildRequest: function(operation) {
         var request = Ext.data.proxy.Ajax.prototype.buildRequest.call(this, operation);
+        request.jsonData = operation.jsonData;
         return request;
-    },*/
-
+    },
 });
-
-/*
-	var localProxy = Ext.create('client.WebDriverProxy');
-	
-	var jsonRequest = {
-	 create_user:{
-	   "first":form.down("#firstname").getValue()
-	  ,"last":form.down("#lastname").getValue()
-	  ,"phone":form.down("#phone").getValue()
-	  ,"email":form.down("#email").getValue()
-	  ,"address":{
-	    "street": form.down("#street").getValue()
-	   ,"city": form.down("city").getValue()
-	   ,"zip":form.down("zip").getValue()
-	   ,"state":form.down("state").getValue()
-	   ,"country":form.down("country").getValue()
-	  }
-	 }	
-	 }
-	}
-
-	var callback = function(data){
-		Ext.getBody().unmask();
-
-		if(data.success == false){
-
-			< msgbox(data.error) >
-		}
-
-    }
-
-	Ext.getBody().mask( "calling service..."); 
-	localProxy.callService(this, callback, jsonRequest);	
-*/
