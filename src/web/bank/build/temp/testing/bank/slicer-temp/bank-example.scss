@@ -539,6 +539,8 @@ $include-bank-application: true;
 $include-bank-controller-main: true;
 $include-bank-view-main: true;
 $include-bank-view-viewport: true;
+$include-client-jsonreader: true;
+$include-client-webdriverproxy: true;
 /* including package ext-theme-base */
 @import '../../../../../ext/packages/ext-theme-base/sass/etc/all';
 /* including package ext-theme-neutral */

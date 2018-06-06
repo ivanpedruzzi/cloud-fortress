@@ -8,7 +8,9 @@ Ext.Loader.addClassPathMappings({
   "Ext": "ext/src",
   "Ext.Msg": "ext/src/window/MessageBox.js",
   "Ext.rtl.EventObjectImpl": "ext/src/rtl/EventObject.js",
-  "bank": "app"
+  "bank": "app",
+  "client": "app",
+  "client.JsonReader": "app/WebDriverProxy.js"
 });
 Ext.ClassManager.addNameAlternateMappings({
   "Ext.AbstractComponent": [],
@@ -831,7 +833,9 @@ Ext.ClassManager.addNameAlternateMappings({
   "bank.Application": [],
   "bank.controller.Main": [],
   "bank.view.Main": [],
-  "bank.view.Viewport": []
+  "bank.view.Viewport": [],
+  "client.JsonReader": [],
+  "client.WebDriverProxy": []
 });
 Ext.ClassManager.addNameAliasMappings({
   "Ext.AbstractComponent": [],
@@ -1824,7 +1828,9 @@ Ext.ClassManager.addNameAliasMappings({
   "bank.view.Main": [
     "widget.app-main"
   ],
-  "bank.view.Viewport": []
+  "bank.view.Viewport": [],
+  "client.JsonReader": [],
+  "client.WebDriverProxy": []
 });
 Ext.setVersion("ext-theme-base", "4.2.1");
 Ext.setVersion("ext-theme-classic", "4.2.1");
