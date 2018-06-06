@@ -54,13 +54,15 @@ public class Service extends HttpServlet {
 		String contentType = "application/json";
 		resp.setContentType(contentType);
 		
+		StringWriter outputWriter = new StringWriter();
+		StringWriter writer = new StringWriter();
+		JSONObject jsonResponse= new JSONObject();
 		PrintWriter httpWriter = resp.getWriter();
 		try {
-			StringWriter writer = new StringWriter(); 
 			IOUtils.copy(req.getInputStream(), writer, StandardCharsets.UTF_8);
 			JSONObject js = new JSONObject(writer.toString());
 			Object obj;
-			JSONObject jsonResponse;
+			
 			if( (obj = js.get("create_user")) != null){
 				jsonResponse = createUser((JSONObject)obj);
 			}
@@ -72,35 +74,47 @@ public class Service extends HttpServlet {
 				jsonResponse.put("success", false);
 				jsonResponse.put("error", "Request unknown");
 			}
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			jsonResponse.put("success", false);
+			jsonResponse.put("error", e.getMessage());
+		}
+		jsonResponse.write(outputWriter, 2, 0);
+		httpWriter.write(outputWriter.toString());
+		httpWriter.flush();
 
-			writer = new StringWriter();
-			jsonResponse.write(writer, 2, 0);
-			System.out.println("org.cloudfortress.service.Service.doPost() content:" + writer.toString());
-			httpWriter.write(writer.toString());
-			httpWriter.flush();
-			
-		} catch (JSONException e) {
-			//send error to client, good for debugging 	
-			e.printStackTrace(httpWriter);
-		} 
 	}
 	
-	private JSONObject createUser(JSONObject createUserRequest) throws JSONException{
+	private JSONObject createUser(JSONObject createUserRequest) throws JSONException, SQLException{
 		JSONObject jsonResponse = new JSONObject();
-
-		jsonResponse.put("success", true);
-		jsonResponse.put("message", "Create User succeded");
-		jsonResponse.put("request", createUserRequest);
-		
-		Connection conn = DBConnect();
+		JSONObject jsonAddress = (JSONObject)createUserRequest.get("address");
 		
 		try {
-			CallableStatement cStmt = conn.prepareCall("{call createUser(user, first, last, password, phone, mail, addressStreet, postalCode, city, state, countryCode)}");
-			cStmt.setString(1, "abcdefg");
+			Connection conn = DBConnect();
+			//CallableStatement cStmt = conn.prepareCall("{call createUser(user, password, first, last, phone, mail, street, zip, city, state, countryCode)}");
+			CallableStatement cStmt = conn.prepareCall("{call createUser(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+			cStmt.setString(1, createUserRequest.getString("user"));
+			cStmt.setString(2, createUserRequest.getString("password"));
+			cStmt.setString(3, createUserRequest.getString("first"));
+			cStmt.setString(4, createUserRequest.getString("last"));
+			cStmt.setString(5, createUserRequest.getString("phone"));
+			cStmt.setString(6, createUserRequest.getString("email"));
+			cStmt.setString(7,  jsonAddress.getString("addresstreet"));
+			cStmt.setString(8,  jsonAddress.getString("postalCode"));
+			cStmt.setString(9,  jsonAddress.getString("city"));
+			cStmt.setString(10, jsonAddress.getString("state"));
+			cStmt.setString(11, jsonAddress.getString("countryCode"));
 			cStmt.execute();
+			conn.close();
+			
+			jsonResponse.put("success", true);
+			jsonResponse.put("message", "Create User succeded");
+			jsonResponse.put("request", createUserRequest);
+
 		} catch(SQLException ex) {
-			System.out.println("An error occurred. Maybe user/password is invalid");
             ex.printStackTrace();
+            throw ex;
 		}
 		
 		return jsonResponse;
@@ -116,29 +130,27 @@ public class Service extends HttpServlet {
 		return jsonResponse;
 	}
 	
-	private Connection DBConnect() {
+	private Connection DBConnect() throws SQLException 
+	{
 		Connection conn = null;
-		
 		String url = "localhost";
 		String port = "3306";
 		String username= "root";
-		String password = "";
+		String password = "IVI2017#MySQL";
 		String dbname = "boston";
         String databaseURL = "jdbc:mysql://" + url + ":" + port + "/" + dbname;
-        
-        System.out.println("Trying to connect...");
-        
         try {
+        	
+        	try{//Force JDBC driver register into the DriverManager 
+        		 Class.forName("com.mysql.jdbc.Driver").newInstance();
+        	}catch(Exception e){}
+        	
+        	
             conn = DriverManager.getConnection(databaseURL, username, password);
-            if (conn != null) {
-            	System.out.println("Connection established");
-            	
-            }
         } catch (SQLException ex) {
-            System.out.println("An error occurred. Maybe user/password is invalid");
             ex.printStackTrace();
+            throw ex;
         }
-        
         return conn;
 	}
 }
