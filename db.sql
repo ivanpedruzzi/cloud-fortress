@@ -1,11 +1,5 @@
--- phpMyAdmin SQL Dump
--- version 4.7.4
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Creato il: Feb 22, 2018 alle 12:52
--- Versione del server: 10.1.28-MariaDB
--- Versione PHP: 7.0.24
+use boston;
+
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -148,7 +142,7 @@ ALTER TABLE `accounts`
 -- Limiti per la tabella `transactions`
 --
 ALTER TABLE `transactions`
-  ADD CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`accountID`) REFERENCES `accounts` (`UserID`);
+  ADD CONSTRAINT accounts`transactions_ibfk_1` FOREIGN KEY (`accountID`) REFERENCES `accounts` (`UserID`);
 
 --
 -- Limiti per la tabella `visitlog`
@@ -160,3 +154,57 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+USE `boston`;
+DROP procedure IF EXISTS `createUser`;
+
+DELIMITER $$
+USE `boston`$$
+CREATE PROCEDURE createUser (
+  IN p_Username varchar(32),
+  IN p_Password varchar(32),
+  IN p_FirstName varchar(128),
+  IN p_LastName varchar(128),
+  IN p_Phone varchar(128),
+  IN p_eMail varchar(76),
+  IN p_AddressStreet varchar(256),
+  IN p_AddressPostalCode varchar(30),
+  IN p_AddressCity varchar(64),
+  IN p_AddressStateOrRegion varchar(64),
+  IN p_AddressCountryCode varchar(2)
+)
+BEGIN
+
+INSERT INTO boston.users 
+	(
+	  Username,
+	  `Password`,
+	  FirstName,
+	  LastName,
+	  Phone,
+	  eMail,
+	  AddressStreet,
+	  AddressPostalCode,
+	  AddressCity,
+	  AddressStateOrRegion,
+	  AddressCountryCode
+	)
+ VALUES
+    (
+	  p_Username,
+	  p_Password,
+	  p_FirstName,
+	  p_LastName,
+	  p_Phone,
+	  p_eMail,
+	  p_AddressStreet,
+	  p_AddressPostalCode,
+	  p_AddressCity,
+	  p_AddressStateOrRegion,
+	  p_AddressCountryCode
+    );
+END
+;$$
+
+DELIMITER ;
